@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-depl
+  labels:
+    app: django-server
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: django-server
+  minReadySeconds: 30
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: django-server
+    spec:
+      initContainers:
+      - name: git-clone
+        image: alpine/git 
+        args:
+          - clone
+          - https://github.com/brian95348/static-files.git
+          - /repo 
+        securityContext:
+          runAsUser: 1 
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - name: static
+          mountPath: /repo
+      containers:
+      - name: nginx
+        image: my-custom-nginx
+        imagePullPolicy: Never
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+        readinessProbe:
+          tcpSocket:
+            port: 8000
+          initialDelaySeconds: 15
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        volumeMounts:
+        - name: static
+          mountPath: /home
+      - name: dev-server
+        image: my-uvicorn-server
+        imagePullPolicy: Never
+        livenessProbe:
+          httpGet:
+            path: /chat
+            port: 8000
+          initialDelaySeconds: 15
+        readinessProbe:
+          exec:
+            command:
+            - ls
+            - /var
+          initialDelaySeconds: 15
+        startupProbe:
+          httpGet:
+            path: /chat
+            port: 8000
+          failureThreshold: 30
+          periodSeconds: 4
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 0.5
+          requests:
+            cpu: 0.2
+        volumeMounts:
+        - name: static
+          mountPath: /staticdir
+      volumes:
+      - name: static
+        emptyDir: {}
+      
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-depl
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  minReadySeconds: 30
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            exec:
+              command:
+              - ls
+              - /var
+            initialDelaySeconds: 15
+          readinessProbe:
+            exec:
+              command:
+              - ls
+              - /var
+          ports:
+          - containerPort: 6379
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 1
+            requests:
+              cpu: 0.2
+          
+
+  

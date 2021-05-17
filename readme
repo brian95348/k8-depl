@@ -1,0 +1,2 @@
+build docker images using dockerfiles in ./nginx and .
+tag them using names defined in the nginx-django-depl.yaml 

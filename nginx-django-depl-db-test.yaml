@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-depl
+  labels:
+    app: db-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-depl
+  template:
+    metadata:
+      labels:
+        app: db-depl
+    spec:
+      containers:
+      - name: postgres
+        image: postgres
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+          protocol: TCP
+        volumeMounts:
+        - name: db
+          mountPath: /var/lib/postgresql/data
+          subPath: postgres
+        env:
+        - name: POSTGRES_PASSWORD
+          value: "12345678"
+      volumes:
+      - name: db
+        emptyDir: {}
