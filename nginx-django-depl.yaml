@@ -39,44 +39,34 @@ spec:
       - name: nginx
         image: my-custom-nginx
         imagePullPolicy: Never
-        readinessProbe:
-          tcpSocket:
-            port: 80
-          initialDelaySeconds: 300
-        startupProbe:
-          httpGet:
-            path: /
-            port: 80
-          failureThreshold: 30
-          periodSeconds: 4
         ports:
         - containerPort: 80
           protocol: TCP
         volumeMounts:
         - name: static
           mountPath: /home
-      - name: dev-server
+      - name: server
         image: my-uvicorn-server
         imagePullPolicy: Never
-        livenessProbe:
-          httpGet:
-            path: /chat
-            port: 8000
-          initialDelaySeconds: 300
-        readinessProbe:
-          exec:
-            command:
-            - ls
-            - /var
-          initialDelaySeconds: 300
-        startupProbe:
-          httpGet:
-            path: /chat
-            port: 8000
-          failureThreshold: 30
-          periodSeconds: 4
+        #livenessProbe:
+         # httpGet:
+          #  path: /
+           # port: 8000
+         # initialDelaySeconds: 300
+        #readinessProbe:
+         # exec:
+          #  command:
+           # - ls
+            #- /var
+         # initialDelaySeconds: 300
+        #startupProbe:
+         # httpGet:
+          #  path: /
+           # port: 8000
+          #failureThreshold: 30
+          #periodSeconds: 4
         ports:
-        - containerPort: 80
+        - containerPort: 8000
           protocol: TCP
         resources:
           limits:

@@ -11,4 +11,4 @@ RUN mv /code/django_config.json /etc && python -m pip install --upgrade pip &&\
 ENV DJANGO_SETTINGS_MODULE=chatproject.settings
 CMD source ./venv/bin/activate && export PYTHONPATH=$PYTHONPATH:/code/chatproject/ &&\
       python manage.py makemigrations && python manage.py migrate &&\
-        gunicorn chatproject.asgi:application -k uvicorn.workers.UvicornWorker
+        gunicorn chatproject.asgi:application -w 4 -k uvicorn.workers.UvicornWorker
